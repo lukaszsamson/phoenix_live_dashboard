@@ -173,6 +173,39 @@ describe('Metrics no tags', () => {
         [2, 3, 4, 5]
       ])
     })
+
+    test('when dataset > maxNumberOfEvents, prunes dataset by half', () => {
+      const chart = new TelemetryChart(document.body, { metric: 'summary', tagged: false, maxNumberOfEvents: 4 })
+
+      // Fill the chart
+      chart.pushData([
+        { x: 'a', y: 1, z: 1 },
+        { x: 'a', y: 1, z: 2 },
+        { x: 'a', y: 1, z: 3 },
+        { x: 'a', y: 1, z: 4 },
+      ])
+
+      expect(mockSetData).toHaveBeenCalledWith([
+        [1, 2, 3, 4],
+        [1, 1, 1, 1],
+        [1, 1, 1, 1],
+        [1, 1, 1, 1],
+        [1, 1, 1, 1]
+      ])
+
+      // Overflow the event limit
+      chart.pushData([
+        { x: 'a', y: 1, z: 5 }
+      ])
+
+      expect(mockSetData).toHaveBeenCalledWith([
+        [3, 4, 5],
+        [1, 1, 1],
+        [1, 1, 1],
+        [1, 1, 1],
+        [1, 1, 1]
+      ])
+    })
   })
 })
 
@@ -286,6 +319,35 @@ describe('Metrics with tags', () => {
         [null, 4, 10, null]
       ])
     })
+  })
+
+  test('when dataset > maxNumberOfEvents, prunes dataset by half', () => {
+    const chart = new TelemetryChart(document.body, { metric: 'last_value', tagged: false, maxNumberOfEvents: 6 })
+
+    // Fill the chart
+    chart.pushData([
+      { x: 'a', y: 1, z: 1 },
+      { x: 'a', y: 1, z: 2 },
+      { x: 'a', y: 1, z: 3 },
+      { x: 'a', y: 1, z: 4 },
+      { x: 'a', y: 1, z: 5 },
+      { x: 'a', y: 1, z: 6 }
+    ])
+
+    expect(mockSetData).toHaveBeenCalledWith([
+      [1, 2, 3, 4, 5, 6],
+      [1, 1, 1, 1, 1, 1]
+    ])
+
+    // Overflow the event limit
+    chart.pushData([
+      { x: 'a', y: 1, z: 7 }
+    ])
+
+    expect(mockSetData).toHaveBeenCalledWith([
+      [4, 5, 6, 7],
+      [1, 1, 1, 1]
+    ])
   })
 })
 

@@ -113,6 +113,8 @@ function nextTaggedValueForCallback({ x, y, z }, callback) {
   })
 }
 
+const getMaxNumberOfEvents = ({ maxNumberOfEvents = 1e5 }) => maxNumberOfEvents
+
 // Handles the basic metrics like Counter, LastValue, and Sum.
 class CommonMetric {
   static __projections() {
@@ -159,6 +161,7 @@ class CommonMetric {
     this.chart = chart
     this.datasets = [{ key: "|x|", data: [] }]
     this.options = options
+    this.maxNumberOfEvents = getMaxNumberOfEvents(options)
 
     if (options.tagged) {
       this.chart.delSeries(1)
@@ -170,6 +173,14 @@ class CommonMetric {
   }
 
   handleMeasurements(measurements) {
+    // prune datasets when we reach the max number of events
+    let currentSize = this.datasets[0].data.length
+    if (currentSize >= this.maxNumberOfEvents) {
+      this.datasets = this.datasets.map(({ data, ...rest }) => {
+        return { data: data.slice(-Math.floor(currentSize / 2)), ...rest }
+      })
+    }
+
     measurements.forEach((measurement) => this.__handler.call(this, measurement, this.__callback))
     this.chart.setData(dataForDatasets(this.datasets))
   }
@@ -182,6 +193,7 @@ class Summary {
     this.chart = chart
     this.datasets = this.constructor.initialData()
     this.options = options
+    this.maxNumberOfEvents = getMaxNumberOfEvents(options)
     this.min = null
     this.max = null
     this.total = 0
@@ -189,6 +201,14 @@ class Summary {
   }
 
   handleMeasurements(data) {
+    // prune datasets when we reach the max number of events
+    let currentSize = this.datasets[0].length
+    if (currentSize >= this.maxNumberOfEvents) {
+      this.datasets = this.datasets.map((data) => {
+        return data.slice(-Math.floor(currentSize / 2))
+      })
+    }
+
     data.forEach(({ x, y, z }) => {
       // Increment the new totals
       this.count++
