@@ -72,7 +72,8 @@ export const newSeriesConfig = (options, index = 0) => {
     ...LineColor.at(index),
     ...SeriesValue(options),
     label: options.label,
-    spanGaps: true
+    spanGaps: true,
+    points: { show: false }
   }
 }
 
@@ -248,6 +249,7 @@ class Summary {
           band: true,
           width: 0,
           show: false,
+          points: { show: false },
           ...SeriesValue(options)
         },
         {
@@ -256,6 +258,7 @@ class Summary {
           band: true,
           width: 0,
           show: false,
+          points: { show: false },
           ...SeriesValue(options)
         },
         {
@@ -263,6 +266,7 @@ class Summary {
           fill: "rgba(0, 0, 0, .07)",
           stroke: "red",
           dash: [10, 10],
+          points: { show: false },
           ...SeriesValue(options)
         },
       ],
